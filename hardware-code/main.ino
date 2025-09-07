@@ -4,16 +4,12 @@
 #include "AdafruitIO_WiFi.h"
 #include <DHT.h>
 #include <Adafruit_Sensor.h>
+#include "credentials.h"  // Include WiFi & Adafruit IO keys safely
 
-// WiFi & Adafruit IO credentials
-#define WIFI_SSID       "Balas_MOTO"
-#define WIFI_PASS       "Jaya@555"
-#define AIO_USERNAME    "Jayabalan_D"
-#define AIO_KEY         "aio_hfuJ60EY4fepMVsMn3NOCeaml2UR"
+// Initialize Adafruit IO connection
+AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 
-AdafruitIO_WiFi io(AIO_USERNAME, AIO_KEY, WIFI_SSID, WIFI_PASS);
-
-// Adafruit IO feeds (note the feed names)
+// Adafruit IO feeds
 AdafruitIO_Feed *gasLevelFeed     = io.feed("gas_level");
 AdafruitIO_Feed *usageFeed        = io.feed("usage_count");
 AdafruitIO_Feed *alertFeed        = io.feed("Alert");
@@ -32,7 +28,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define BUZZER_PIN     27
 #define DHTPIN         14
 #define DHTTYPE        DHT11
-
 DHT dht(DHTPIN, DHTTYPE);
 
 // Constants
@@ -44,18 +39,18 @@ int usageCount = 0;
 bool lastButtonStableState = HIGH;
 bool lastButtonReading = HIGH;
 unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 20;  // faster response
+const unsigned long debounceDelay = 20;
 
 // Buzzer timing
 unsigned long lastBeepTime = 0;
 const unsigned long beepInterval = 500;
 bool buzzerState = false;
 
-// Upload Interval - increased to 20 seconds to avoid throttling
+// Upload Interval
 unsigned long lastUploadTime = 0;
-const unsigned long uploadInterval = 20000;  // 20,000 milliseconds
+const unsigned long uploadInterval = 20000;
 
-// To track last uploaded values and avoid redundant uploads
+// Track last uploaded values
 float lastGasPPM = -1;
 int lastUsageCount = -1;
 float lastTemperature = -1000;
@@ -118,34 +113,19 @@ void loop() {
   String alertMsg = "";
   bool isDanger = false;
 
-  if (isGasBad) {
-    alertMsg = "Alert-1";
-    isDanger = true;
-  } 
-
-  if (isTempHigh || isTempLow) {
-    alertMsg = "Alert-2";
-    isDanger = true;
-  } 
-  
-  if (isHumHigh || isHumLow) {
-    alertMsg = "Alert-3";
-    isDanger = true;
-  } 
-  
-  else if (isLowPuffs) {
-    alertMsg = "Low Puff Alert!";
-  } else {
-    alertMsg = "None";
-  }
+  if (isGasBad) { alertMsg = "Alert-1"; isDanger = true; } 
+  if (isTempHigh || isTempLow) { alertMsg = "Alert-2"; isDanger = true; } 
+  if (isHumHigh || isHumLow) { alertMsg = "Alert-3"; isDanger = true; } 
+  else if (isLowPuffs) { alertMsg = "Low Puff Alert!"; } 
+  else { alertMsg = "None"; }
 
   // Serial output
   Serial.println("----SMART INHALER----");
-  Serial.print("Gas               : "); Serial.print((int)gasPPM); Serial.println(" ppm");
-  Serial.print("Used              : "); Serial.print(usageCount); Serial.print("/"); Serial.println(totalPuffs);
-  Serial.print("Temperature  : "); Serial.print(temperature,1); Serial.println(" *C");
-  Serial.print("Humidity       : "); Serial.print(humidity,1); Serial.println(" %");
-  Serial.print("Alert             : "); Serial.println(alertMsg);
+  Serial.print("Gas       : "); Serial.print((int)gasPPM); Serial.println(" ppm");
+  Serial.print("Used      : "); Serial.print(usageCount); Serial.print("/"); Serial.println(totalPuffs);
+  Serial.print("Temperature: "); Serial.print(temperature,1); Serial.println(" *C");
+  Serial.print("Humidity  : "); Serial.print(humidity,1); Serial.println(" %");
+  Serial.print("Alert     : "); Serial.println(alertMsg);
   Serial.println("----------------------");
 
   // OLED Display
@@ -171,39 +151,20 @@ void loop() {
     noTone(BUZZER_PIN);
   }
 
-  // Upload data every 20 seconds if values changed
+  // Upload data every 20s if values changed
   if (io.status() == AIO_CONNECTED && (millis() - lastUploadTime > uploadInterval)) {
     bool anyChange = false;
 
-    if (abs(gasPPM - lastGasPPM) > 1.0) {
-      gasLevelFeed->save(gasPPM);
-      lastGasPPM = gasPPM;
-      anyChange = true;
-    }
-    if (usageCount != lastUsageCount) {
-      usageFeed->save(usageCount);
-      lastUsageCount = usageCount;
-      anyChange = true;
-    }
-    if (abs(temperature - lastTemperature) > 0.5) {
-      temperatureFeed->save(temperature);
-      lastTemperature = temperature;
-      anyChange = true;
-    }
-    if (abs(humidity - lastHumidity) > 1.0) {
-      humidityFeed->save(humidity);
-      lastHumidity = humidity;
-      anyChange = true;
-    }
-    if (alertMsg != lastAlert) {
-      alertFeed->save(alertMsg);
-      lastAlert = alertMsg;
-      anyChange = true;
-    }
+    if (abs(gasPPM - lastGasPPM) > 1.0) { gasLevelFeed->save(gasPPM); lastGasPPM = gasPPM; anyChange = true; }
+    if (usageCount != lastUsageCount) { usageFeed->save(usageCount); lastUsageCount = usageCount; anyChange = true; }
+    if (abs(temperature - lastTemperature) > 0.5) { temperatureFeed->save(temperature); lastTemperature = temperature; anyChange = true; }
+    if (abs(humidity - lastHumidity) > 1.0) { humidityFeed->save(humidity); lastHumidity = humidity; anyChange = true; }
+    if (alertMsg != lastAlert) { alertFeed->save(alertMsg); lastAlert = alertMsg; anyChange = true; }
+
     if (anyChange) lastUploadTime = millis();
   }
 
-  // Button debounce & usage count increment (no beep on press)
+  // Button debounce & usage count increment
   bool currentReading = digitalRead(BUTTON_PIN);
   if (currentReading != lastButtonReading) lastDebounceTime = millis();
   lastButtonReading = currentReading;
@@ -211,7 +172,7 @@ void loop() {
     if (lastButtonStableState == HIGH && currentReading == LOW) {
       usageCount++;
       if (usageCount > totalPuffs) usageCount = totalPuffs;
-      if (io.status() == AIO_CONNECTED) usageFeed->save(usageCount); // instant update on press
+      if (io.status() == AIO_CONNECTED) usageFeed->save(usageCount);
       Serial.println("Inhaler Used!");
     }
     lastButtonStableState = currentReading;
