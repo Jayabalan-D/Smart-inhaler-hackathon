@@ -1,1 +1,14 @@
+# Arduino / ESP32 build files
+*.bin
+*.elf
+*.hex
+*.ino.cpp
+*.log
+
+# Local credentials
+hardware-code/credentials.h
+
+# OS / IDE specific
+.DS_Store
+.vscode/
 
