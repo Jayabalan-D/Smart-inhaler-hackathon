@@ -1,54 +1,48 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f5f0e6; /* beige background */
-  color: #3d2b1f; /* dark brown text */
+  background: #f5f0e6; /* soft beige */
+  color: #3d2b1f; /* deep brown text */
   text-align: center;
   padding: 40px;
+  margin: 0;
 }
 
 h2 {
-  color: #4b5320; /* olive green */
-  margin-bottom: 15px;
-  font-size: 1.8em;
+  color: #4b5320; /* olive */
+  margin-bottom: 30px;
+  font-size: 2em;
+  letter-spacing: 1px;
 }
 
 .card {
   background: #fffaf0; /* ivory / sandal */
   padding: 25px;
   margin: 20px auto;
-  border-radius: 16px;
-  box-shadow: 0 6px 12px rgba(61, 43, 31, 0.2);
+  border-radius: 18px;
   width: 320px;
+
+  /* Stylish border */
+  border: 2px solid #a07855; /* sandal brown border */
+  box-shadow: 0 6px 12px rgba(61, 43, 31, 0.2);
+
+  /* smooth hover */
   transition: all 0.3s ease-in-out;
 }
 
 .card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 18px rgba(61, 43, 31, 0.3);
+  border-color: #6b8e23; /* olive highlight on hover */
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px rgba(61, 43, 31, 0.3);
+}
+
+.card p {
+  margin: 8px 0;
+  font-size: 1.1em;
 }
 
 .value {
-  font-size: 2em;
+  font-size: 1.9em;
   font-weight: bold;
-  color: #6b8e23; /* olive green */
-  margin-top: 10px;
+  color: #4b5320; /* olive */
+  margin-top: 12px;
 }
-
-.button {
-  display: inline-block;
-  padding: 12px 24px;
-  margin-top: 15px;
-  background: #d2b48c; /* tan */
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.button:hover {
-  background: #a07855; /* darker brown */
-  transform: translateY(-3px);
-}
-
