@@ -20,9 +20,8 @@ Data is processed with an Edge Impulse ML model and visualized through a web das
 ---
 
 🚀 Setup
-1. Flash `hardware-code/main.ino` to ESP board  
-2. Add WiFi credentials in `credentials.h` (copy from `credentials_template.h`)  
-3. Open `web-app/index.html` to view dashboard  
+1. Flash `hardware-code/main.ino` to ESP board   
+2. Open `web-app/index.html` to view dashboard  
 
 ---
 
