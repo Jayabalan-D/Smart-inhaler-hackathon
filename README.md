@@ -27,9 +27,9 @@ Data is processed with an Edge Impulse ML model and visualized through a web das
 ---
 
 📊 Air Quality Levels
-- Good (0) : 0–400 ppm  
-- Moderate (1) : 400–600 ppm  
-- Risk (2) : 600–900 ppm  
+- Good : 0–400 ppm  
+- Moderate : 400–600 ppm  
+- Risk : 600–900 ppm  
 
 ---
 
