@@ -6,19 +6,17 @@
 #include <Adafruit_Sensor.h>
 
 // WiFi & Adafruit IO credentials
-#define WIFI_SSID     "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
-#define AIO_USERNAME  "YOUR_ADAFRUIT_USERNAME"
-#define AIO_KEY       "YOUR_ADAFRUIT_KEY"
+#define WIFI_SSID       "Balas_MOTO"
+#define WIFI_PASS       "Jaya@555"
+#define AIO_USERNAME    "User_name"
+#define AIO_KEY         "AIO Key"
 
 AdafruitIO_WiFi io(AIO_USERNAME, AIO_KEY, WIFI_SSID, WIFI_PASS);
-
-// Adafruit IO feeds (note the feed names)
-AdafruitIO_Feed *gasLevelFeed     = io.feed("gas_level");
-AdafruitIO_Feed *usageFeed        = io.feed("usage_count");
-AdafruitIO_Feed *alertFeed        = io.feed("Alert");
-AdafruitIO_Feed *temperatureFeed  = io.feed("Temperature");
-AdafruitIO_Feed *humidityFeed     = io.feed("Humidity");
+AdafruitIO_Feed *gasLevelFeed    = io.feed("gas_level");
+AdafruitIO_Feed *usageFeed       = io.feed("usage_count");
+AdafruitIO_Feed *alertFeed       = io.feed("Alert");
+AdafruitIO_Feed *temperatureFeed = io.feed("Temperature");
+AdafruitIO_Feed *humidityFeed    = io.feed("Humidity");
 
 // OLED setup
 #define SCREEN_WIDTH 128
@@ -32,34 +30,29 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define BUZZER_PIN     27
 #define DHTPIN         14
 #define DHTTYPE        DHT11
-
 DHT dht(DHTPIN, DHTTYPE);
 
-// Constants
-int gasThresholdPPM = 600;
+const int gasThresholdPPM = 600;
 const int totalPuffs = 200;
 int usageCount = 0;
 
-// Debounce variables
-bool lastButtonStableState = HIGH;
-bool lastButtonReading = HIGH;
+// Debounce
+bool lastButtonStableState = HIGH, lastButtonReading = HIGH;
 unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 20;  // faster response
+const unsigned long debounceDelay = 20;
 
-// Buzzer timing
+// Buzzer
 unsigned long lastBeepTime = 0;
 const unsigned long beepInterval = 500;
 bool buzzerState = false;
 
-// Upload Interval - increased to 20 seconds to avoid throttling
-unsigned long lastUploadTime = 0;
-const unsigned long uploadInterval = 20000;  // 20,000 milliseconds
+// Upload timing
+const unsigned long ENV_UPLOAD_INTERVAL = 25000; // 25 seconds
+unsigned long lastEnvUpload = 0;
+bool firstEnvUploadDone = false;
 
-// To track last uploaded values and avoid redundant uploads
-float lastGasPPM = -1;
+// For change detection on usage/alert
 int lastUsageCount = -1;
-float lastTemperature = -1000;
-float lastHumidity = -1;
 String lastAlert = "";
 
 void setup() {
@@ -101,19 +94,19 @@ void loop() {
   io.run();
 
   // Read sensors
-  float gasPPM      = (analogRead(GAS_SENSOR_PIN) / 4095.0) * 1000.0;
-  float humidity    = dht.readHumidity();
+  float gasPPM = (analogRead(GAS_SENSOR_PIN) / 4095.0) * 1000.0;
+  float humidity = dht.readHumidity();
   float temperature = dht.readTemperature();
   int remainingPuffs = totalPuffs - usageCount;
   if (remainingPuffs < 0) remainingPuffs = 0;
 
   // Alert logic
-  bool isGasBad    = (gasPPM > gasThresholdPPM);
-  bool isTempHigh  = (temperature > 40);
-  bool isTempLow   = (temperature < 10);
-  bool isHumHigh   = (humidity >= 90);
-  bool isHumLow    = (humidity < 25);
-  bool isLowPuffs  = (usageCount > 170);
+  bool isGasBad = (gasPPM > gasThresholdPPM);
+  bool isTempHigh = (temperature > 40);
+  bool isTempLow = (temperature < 10);
+  bool isHumHigh = (humidity >= 90);
+  bool isHumLow = (humidity < 25);
+  bool isLowPuffs = (usageCount > 170);
 
   String alertMsg = "";
   bool isDanger = false;
@@ -122,29 +115,27 @@ void loop() {
     alertMsg = "Alert-1";
     isDanger = true;
   } 
-
-  if (isTempHigh || isTempLow) {
+  else if (isTempHigh || isTempLow) {
     alertMsg = "Alert-2";
     isDanger = true;
   } 
-  
-  if (isHumHigh || isHumLow) {
+  else if (isHumHigh || isHumLow) {
     alertMsg = "Alert-3";
     isDanger = true;
   } 
-  
   else if (isLowPuffs) {
     alertMsg = "Low Puff Alert!";
-  } else {
+  } 
+  else {
     alertMsg = "None";
   }
 
-  // Serial output
+  // Serial output - Unchanged from your original code
   Serial.println("----SMART INHALER----");
   Serial.print("Gas               : "); Serial.print((int)gasPPM); Serial.println(" ppm");
   Serial.print("Used              : "); Serial.print(usageCount); Serial.print("/"); Serial.println(totalPuffs);
-  Serial.print("Temperature  : "); Serial.print(temperature,1); Serial.println(" *C");
-  Serial.print("Humidity       : "); Serial.print(humidity,1); Serial.println(" %");
+  Serial.print("Temperature       : "); Serial.print(temperature,1); Serial.println(" *C");
+  Serial.print("Humidity          : "); Serial.print(humidity,1); Serial.println(" %");
   Serial.print("Alert             : "); Serial.println(alertMsg);
   Serial.println("----------------------");
 
@@ -171,39 +162,38 @@ void loop() {
     noTone(BUZZER_PIN);
   }
 
-  // Upload data every 20 seconds if values changed
-  if (io.status() == AIO_CONNECTED && (millis() - lastUploadTime > uploadInterval)) {
-    bool anyChange = false;
+  unsigned long now = millis();
 
-    if (abs(gasPPM - lastGasPPM) > 1.0) {
-      gasLevelFeed->save(gasPPM);
-      lastGasPPM = gasPPM;
-      anyChange = true;
-    }
-    if (usageCount != lastUsageCount) {
-      usageFeed->save(usageCount);
-      lastUsageCount = usageCount;
-      anyChange = true;
-    }
-    if (abs(temperature - lastTemperature) > 0.5) {
-      temperatureFeed->save(temperature);
-      lastTemperature = temperature;
-      anyChange = true;
-    }
-    if (abs(humidity - lastHumidity) > 1.0) {
-      humidityFeed->save(humidity);
-      lastHumidity = humidity;
-      anyChange = true;
-    }
-    if (alertMsg != lastAlert) {
-      alertFeed->save(alertMsg);
-      lastAlert = alertMsg;
-      anyChange = true;
-    }
-    if (anyChange) lastUploadTime = millis();
+  // Instant upload on start
+  if (!firstEnvUploadDone && io.status() == AIO_CONNECTED) {
+    gasLevelFeed->save(gasPPM);
+    temperatureFeed->save(temperature);
+    humidityFeed->save(humidity);
+    firstEnvUploadDone = true;
+    lastEnvUpload = now;
   }
 
-  // Button debounce & usage count increment (no beep on press)
+  // Periodic upload every 25 secs
+  if (io.status() == AIO_CONNECTED && firstEnvUploadDone && (now - lastEnvUpload >= 25000)) {
+    gasLevelFeed->save(gasPPM);
+    temperatureFeed->save(temperature);
+    humidityFeed->save(humidity);
+    lastEnvUpload = now;
+  }
+
+  // Upload usage count if changed
+  if (io.status() == AIO_CONNECTED && usageCount != lastUsageCount) {
+    usageFeed->save(usageCount);
+    lastUsageCount = usageCount;
+  }
+
+  // Upload alert if changed
+  if (io.status() == AIO_CONNECTED && alertMsg != lastAlert) {
+    alertFeed->save(alertMsg);
+    lastAlert = alertMsg;
+  }
+
+  // Button debounce & usage increment
   bool currentReading = digitalRead(BUTTON_PIN);
   if (currentReading != lastButtonReading) lastDebounceTime = millis();
   lastButtonReading = currentReading;
@@ -211,7 +201,7 @@ void loop() {
     if (lastButtonStableState == HIGH && currentReading == LOW) {
       usageCount++;
       if (usageCount > totalPuffs) usageCount = totalPuffs;
-      if (io.status() == AIO_CONNECTED) usageFeed->save(usageCount); // instant update on press
+      if (io.status() == AIO_CONNECTED) usageFeed->save(usageCount); // upload immediately
       Serial.println("Inhaler Used!");
     }
     lastButtonStableState = currentReading;
