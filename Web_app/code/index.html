@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SMART INHALER</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🌿 SMART INHALER</h1>
+    <!-- Navigation Boxes -->
+    <div class="nav-grid">
+      <div class="nav-card" onclick="showSection('live-data')">
+        Live Data
+      </div>
+      <div class="nav-card" onclick="showSection('graphs')">
+        Data Trends
+      </div>
+      <div class="nav-card" onclick="showSection('events')">
+        Abnormal Events
+      </div>
+    </div>
+  </header>
+
+  <!-- Section 1: Live Data -->
+  <section id="live-data" class="section active">
+    <div class="section-box center-content">
+      <div class="param-card" id="ppm-card">
+        <p><b>Air Quality (PPM):</b></p>
+        <p class="value" id="aq">--</p>
+      </div>
+      <div class="param-card" id="temp-card">
+        <p><b>Temperature:</b></p>
+        <p class="value" id="temp">--</p>
+      </div>
+      <div class="param-card" id="hum-card">
+        <p><b>Humidity:</b></p>
+        <p class="value" id="hum">--</p>
+      </div>
+      <div class="param-card" id="usage-card">
+        <p><b>Usage Count:</b></p>
+        <p class="value" id="usage">--</p>
+      </div>
+      <div class="param-card" id="alert-card">
+        <p><b>Alert:</b></p>
+        <p class="value" id="alert">--</p>
+      </div>
+      <!-- ✅ Added expiry card below alert -->
+      <div class="param-card" id="expiry-card">
+        <p><b>Expiry Status:</b></p>
+        <p class="value" id="expiry">--</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Graphs -->
+  <section id="graphs" class="section hidden">
+    <div class="nav-grid">
+      <div class="nav-card" onclick="document.getElementById('live-graph').scrollIntoView({behavior:'smooth'})">
+        Live Graph
+      </div>
+    </div>
+
+    <div class="graph-container" id="live-graph">
+      <canvas id="liveChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Section 3: Events Table -->
+  <section id="events" class="section hidden">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Parameter</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody id="event-log">
+        <!-- Abnormal events will appear here -->
+      </tbody>
+    </table>
+  </section>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
