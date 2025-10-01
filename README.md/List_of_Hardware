@@ -1,1 +1,6 @@
-
+1. ESP32 / ESP8266
+2. MQ-135 Gas Sensor
+3. DHT11 (Temperature and Humidity Sensor)
+4. OLED Display (SSD1306)
+5. Buzzer
+6. Breadboard, jumper wires, resistors, power supply
