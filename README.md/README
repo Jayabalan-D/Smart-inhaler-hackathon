@@ -1,0 +1,52 @@
+------------Smart inahler project with IOT and AI for Asthma monitoring---------------
+
+---Objective---
+This project is a smart inhaler system designed to monitor environmental conditions and patient 
+inhaler usage in real time. It integrates IoT sensors, cloud dashboards, and machine learning to
+provide caregivers and doctors with actionable insights into asthma management
+
+---Features---
+Gas Detection (PPM):  
+Uses the MQ1 sensor to measure harmful gases in the environment.
+Temperature & Humidity Monitoring:  
+Captures ambient conditions to assess environmental triggers.
+Real-time Data Transmission:  
+Sensor data is sent to Adafruit IO Dashboard and mirrored to a web application.
+Threshold Alerts:  
+Caretakers are notified instantly when sensor values exceed safe thresholds.
+Inhaler Usage Tracking:  
+Logs the exact time of inhaler use, enabling doctors to analyze usage patterns.
+Abnormal Event Detection:  
+Displays unusual inhaler activity or environmental exposure events with timestamps.
+Live Graphs:  
+Interactive visualization of gas PPM, temperature, and humidity in the web app.
+AI Risk Prediction:  
+A Random Forest model predicts the likelihood of future asthma attacks based on sensor data.
+
+---Healthcare Impact---
+Helps caretakers monitor patient safety remotely.
+Provides doctors with detailed inhaler usage analytics.
+Predicts risk of asthma attacks, enabling proactive treatment.
+
+---Tech Stack---
+Hardware: ESP32, MQ1 Gas Sensor, DHT11 (Temperature & Humidity)
+IoT Platform: Adafruit IO
+Web Application: HTML, CSS, JavaScript (with live data visualization)
+Machine Learning: Juputer notebook
+Alerts & Notifications: Threshold-based detection integrated into the app
+
+---Workflow---
+Sensors collect gas PPM, temperature, and humidity.
+Data is transmitted to Adafruit IO.
+Web app fetches and displays live graphs.
+Threshold breaches trigger alerts for caretakers.
+Inhaler usage logs are stored and analyzed.
+AI model predicts risk of asthma attacks using historical data.
+
+---.Future Improvements---
+Integration with mobile apps for patient-side monitoring.
+Expansion to wearable devices for continuous health tracking.
+Enhanced AI models with deep learning for higher accuracy.
+
+---License---
+This project is licensed under the MIT License – feel free to use and adapt it.
