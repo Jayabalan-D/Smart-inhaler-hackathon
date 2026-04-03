@@ -29,10 +29,9 @@ Provides doctors with detailed inhaler usage analytics.
 Predicts risk of asthma attacks, enabling proactive treatment.
 
 ---Tech Stack---
-Hardware: ESP32, MQ1 Gas Sensor, DHT11 (Temperature & Humidity)
+Hardware: ESP32, MQ135 Gas Sensor, DHT11 (Temperature & Humidity)
 IoT Platform: Adafruit IO
 Web Application: HTML, CSS, JavaScript (with live data visualization)
-Machine Learning: Juputer notebook
 Alerts & Notifications: Threshold-based detection integrated into the app
 
 ---Workflow---
@@ -41,12 +40,11 @@ Data is transmitted to Adafruit IO.
 Web app fetches and displays live graphs.
 Threshold breaches trigger alerts for caretakers.
 Inhaler usage logs are stored and analyzed.
-AI model predicts risk of asthma attacks using historical data.
 
 ---.Future Improvements---
 Integration with mobile apps for patient-side monitoring.
 Expansion to wearable devices for continuous health tracking.
-Enhanced AI models with deep learning for higher accuracy.
+Enhanced AI models with Machine learning or deep learning to predict futhure risk of asthma attack on patient.
 
 ---License---
 This project is licensed under the MIT License – feel free to use and adapt it.
